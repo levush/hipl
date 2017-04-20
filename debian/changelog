@@ -1,0 +1,12 @@
+hipl (1.0.6-2) maverick; urgency=low
+
+  * the release is split in several packages
+
+ -- Samuel Richter <samuel.richter@rwth-aachen.de>  Wed, 15 Dec 2010 07:34:16 +0100
+
+
+hipl (1.0.6-1) maverick; urgency=low
+
+  * Initial snapshot for ppa testing purposes
+
+ -- Rene Hummen <rene.hummen@cs.rwth-aachen.de>  Thu, 25 Nov 2010 21:12:25 +0100

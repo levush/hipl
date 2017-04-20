@@ -1,0 +1,64 @@
+#!/bin/sh -xv
+
+TMP_DIR='$HOME/.hipl.syncall.tmp.dir'
+
+HOSTS="
+terokkar.infrahip.net
+halko.pc.infrahip.net
+allerian.infrahip.net
+garadar.infrahip.net
+nagrand.infrahip.net
+ironforge.infrahip.net
+hipl-fc32.cs.hut.fi
+hipl-fc64.cs.hut.fi
+"
+
+COMMANDS="
+    rm -rf $TMP_DIR &&
+    mkdir -p $TMP_DIR &&
+    cd $TMP_DIR &&
+    wget http://hipl.hiit.fi/hipl/hipl.tar.gz &&
+    tar --strip-components 1 -xvzf hipl.tar.gz &&
+    autoreconf --install &&
+    ./configure &&
+    make bin syncrepo ;
+    rm -rf $TMP_DIR
+"
+
+#set -e
+
+# configured hosts:
+# ubuntu lucid 32-bit    allerian
+# ubuntu lucid 64-bit    halko
+# ubuntu natty 32-bit    terokkar.infrahip.net
+# ubuntu natty 64-bit    garadar
+# F14 32-bit             ironforge
+# F14 64-bit             nagrand.infrahip.net
+# FC15 32-bit            hipl-fc32.cs.hut.fi
+# FC15 64-bit            hipl-fc64.cs.hut.fi
+#
+# disabled hosts:
+# fc15 32-bit             blacktemple
+# fc15 64-bit            stonebreaker
+# ubuntu maverick 64-bit cenarion
+# f13 32-bit             netherstorm.infrahip.net
+# F13 64-bit             shadowmoon.infrahip.net
+
+if test $# != 0; then
+    HOSTS="$@"
+fi
+
+echo "--- Hosts ---"
+echo "$HOSTS"
+
+echo "--- Executing command on each host ---"
+
+for HOST in $HOSTS; do
+    echo "--- Host: $HOST ---"
+    ping -c 2 $HOST
+    if test $? = 0; then
+        ssh $HOST $COMMANDS
+    else
+        echo "Not responding, skipping"
+    fi
+done

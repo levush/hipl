@@ -1,0 +1,21 @@
+--- old/netinet/ip.h	2014-04-30 22:30:15.572177205 -0700
++++ new/netinet/ip.h	2014-04-30 22:31:51.096180484 -0700
+@@ -80,6 +80,8 @@
+ /*
+  * Definitions for IP type of service (ip_tos)
+  */
++#define	IPTOS_TOS_MASK  	0x1E
++#define	IPTOS_TOS(tos)      ((tos) & IPTOS_TOS_MASK)
+ #define	IPTOS_LOWDELAY		0x10
+ #define	IPTOS_THROUGHPUT	0x08
+ #define	IPTOS_RELIABILITY	0x04
+@@ -93,6 +95,8 @@
+ /*
+  * Definitions for IP precedence (also in ip_tos) (hopefully unused)
+  */
++#define	IPTOS_PREC_MASK 		0xe0
++#define	IPTOS_PREC(tos) 		((tos) & IPTOS_PREC_MASK)
+ #define	IPTOS_PREC_NETCONTROL		0xe0
+ #define	IPTOS_PREC_INTERNETCONTROL	0xc0
+ #define	IPTOS_PREC_CRITIC_ECP		0xa0
+ 

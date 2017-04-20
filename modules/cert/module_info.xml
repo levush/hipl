@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Mandatory: name, version -->
+<module
+    name="cert"
+    version="0.0.1"
+    description="certificate exchange for the HIP daemon."
+    developer=""
+    bugaddress="hipl-users@freelists.org"
+    webpage="http://infrahip.hiit.fi/">
+
+    <requires>
+        <module name="update" minversion="0.0.1" />
+        <module name="midauth" minversion="0.0.1" />
+    </requires>
+
+    <!-- Mandatory: name, header_file, init_function -->
+    <application
+        name="hipd"
+        header_file="modules/cert/hipd/cert.h"
+        init_function="hip_cert_init" />
+</module>
+

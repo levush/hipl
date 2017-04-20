@@ -1,0 +1,18 @@
+--- a/src/extra/tcp.c	2014-04-14 06:09:08.933915830 -0700
++++ b/src/extra/tcp.c	2014-04-14 06:09:48.305916775 -0700
+@@ -109,16 +109,6 @@
+ }
+ EXPORT_SYMBOL(nfq_tcp_compute_checksum_ipv6);
+
+-/*
+- *	The union cast uses a gcc extension to avoid aliasing problems
+- *  (union is compatible to any of its members)
+- *  This means this part of the code is -fstrict-aliasing safe now.
+- */
+-union tcp_word_hdr {
+-	struct tcphdr hdr;
+-	uint32_t  words[5];
+-};
+-
+ #define tcp_flag_word(tp) ( ((union tcp_word_hdr *)(tp))->words[3])
+ 

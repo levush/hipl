@@ -1,0 +1,168 @@
+How to get HIPL
+===============
+
+The latest version of HIPL is always available through Bazaar (version 1.6 or
+later required) and is hosted on Launchpad now. Run the command
+
+  bzr checkout lp:hipl
+
+to get a checkout of the source tree.
+
+This will provide you with an anonymous checkout, unless you are a developer
+registered with the hipl-core project on Launchpad and used the command
+"bzr launchpad-login" beforehand to let Bazaar know your Launchpad user name.
+
+
+HIPL dependencies
+=================
+
+HIPL places certain requirements on your kernel; Linux kernel version 2.6.27
+or newer is the minimum version.
+
+In order to compile HIPL you need autotools (autoconf, automake, libtool), GNU
+Make, gcc and Bazaar. OpenSSL, iptables and libconfig are required complete with
+development headers. For Perl Net::IP and Net::DNS modules are required.
+You can optionally install xmlto to build the HOWTO and doxygen to build the
+code documentation. Installing version 0.9.8 or later of the optional check
+library (http://check.sourceforge.net/) enables unit tests.
+Some additional programs are needed for building binary distribution packages.
+
+The following command(s) should solve the dependencies:
+
+Debian/Ubuntu
+-------------
+- required:
+  apt-get install autoconf automake libtool make gcc libssl-dev \
+                  libnet-ip-perl libnet-dns-perl bzr libnetfilter-queue-dev
+- optional:
+  apt-get install xmlto doxygen check libconfig8-dev miredo
+- binary packages:
+  apt-get install fakeroot dpkg-dev debhelper devscripts w3m
+
+Fedora/CentOS
+-------------
+- required:
+  yum install autoconf automake libtool make gcc openssl-devel \
+              perl-Net-IP perl-Net-DNS bzr libnetfilter_queue-devel
+- optional:
+  yum install xmlto doxygen check-devel libconfig-devel miredo
+- binary packages:
+  yum install rpm-build redhat-lsb w3m createrepo
+
+Note: CentOS binary build requires patches/centos/centos-spec.patch
+
+openSUSE
+--------
+- required:
+  zypper install autoconf automake libtool make gcc libopenssl-devel \
+                 perl-Net-IP perl-Net-DNS bzr libnetfilter_queue-devel
+- optional:
+  zypper install xmlto doxygen check-devel
+- binary packages:
+  zypper install rpm lsb-release w3m
+
+
+How to build HIPL
+=================
+
+If you are working with a Bazaar checkout, you will have to bootstrap the
+autotools build system with
+
+  autoreconf --install
+
+before running configure. On subsequent times, you don't have give the
+install option.
+
+From the trunk directory in the HIPL sources, run the following command to
+build HIPL:
+
+  ./configure && make
+
+./configure --help will display the multitude of configuration options
+available for HIPL.
+
+To keep the developers sharp and honest HIPL is built with -Werror in CFLAGS.
+gcc will just error out when issuing a warning. If you experience compilation
+failures and just need to get HIPL to build on a combination of platform and
+compiler that does produce warnings, you can override -Werror as follows:
+
+  CFLAGS=-Wno-error ./configure
+
+Then run make as usual.
+
+Please note that the HIP configuration files are located in
+/usr/local/etc/hip with the default configure flags. If you want to
+change the location to /etc/hip, you have to pass --sysconfdir=/etc to
+configure (or create a symbolic link).
+
+HIPL on Android
+===============
+
+There is ongoing work for a configuration tool that builds an android
+cross-compilation toolchain.
+
+1. Install all the packages for the underlying distribution as described in
+   the previous section.
+
+2. Install wget (apt-get install wget)
+   This is already included in most Linux installations by default.
+
+3. Run the script: tools/prepare_android_toolchain.sh
+   The script will attempt to install a cross-compilation toolchain,
+   downloading missing components if it has to, and output the necessary
+   commands for configuring the HIPL build environment to use the toolchain.
+
+4. Follow the instructions printed at the end of the script.
+
+5. In the HIPL source tree, run:
+   export CC="(path to android toolchain)/bin/arm-linux-androideabi-gcc"
+   ./configure --enable-android --host=arm-linux                    \
+               --prefix=/usr    --sysconfdir=/etc
+
+For Android-versions older than 4.1, add '--disable-android-pie' to
+the configure line.
+
+You can then compile the source using 'make'.
+
+Currently to install HIP you need to run the following commands on the computer:
+adb root
+adb shell mount -o remount,rw /
+adb shell mount -o remount,rw /system
+adb shell mkdir -p /var/lock
+adb shell mkdir    /etc/hip
+adb shell ln -s /system/lib/libcrypto.so /system/lib/libcrypto.so.1.0.0
+
+Then using 'adb push' on your computer
+- Copy hipd/hipd.conf, hipd/relay.conf and hipfw/hipfw.conf to /etc/hip/
+- Copy hipd/hipd, hipfw/hipfw and tools/hipconf to /system/xbin
+- Copy all libmnl.* , libnfnetlink.* and libnetfilter_queue.* from
+  the toolchain's sysroot/usr/lib/ to /system/lib/ on the device.
+  This is usually $HOME/android_tools/toolchain/sysroot/usr/lib/
+  DO NOT copy all the files under that directory, they do not all
+  work on your device. Commands:
+
+adb push hipd/hipd        /system/xbin
+adb push hipfw/hipfw      /system/xbin
+adb push tools/hipconf    /system/xbin
+adb push hipd/hipd.conf   /etc/hip
+adb push hipd/relay.conf  /etc/hip
+adb push hipfw/hipfw.conf /etc/hip
+for file in ${ANDROID_SYSROOT}/usr/lib/lib{netfilter_queue,nfnetlink,mnl}.*; do
+  adb push $file /system/lib;
+done
+
+You need to run hipd with the -a flag.
+The /var/lock directory does not survive reboot, it needs to be
+recreated through "mount -o remount,rw /" and "mkdir -p /var/lock".
+
+To run HIPL software on your Android device, you need root access, and
+the kernel must support IPsec BEET, the dummy network driver and null crypto.
+Instructions for preparing a Google Nexus family device can be found in
+doc/hipl_android_preparation_guide.txt
+
+
+How to contribute to HIPL
+=========================
+
+Grab the code from Bazaar and start hacking, external contributions are always
+welcome. Read doc/HACKING for detailed coding guidelines.

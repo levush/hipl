@@ -1,0 +1,5 @@
+This directory contains everything necessary to build HIPL on OpenWrt.
+
+* hipl:
+  The contents of this directory should be copied to the package/ subdirectory
+  of an OpenWrt checkout.

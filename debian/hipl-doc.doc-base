@@ -1,0 +1,11 @@
+Document: hipl
+Title: HIPL HOWTO
+Abstract: Documentation for HIPL in text and HTML form.
+Section: Network/Communication
+
+Format: Text
+Files: /usr/share/doc/hipl-doc/HOWTO.txt.gz
+
+Format: HTML
+Index: /usr/share/doc/hipl-doc/HOWTO.html
+Files: /usr/share/doc/hipl-doc/HOWTO.html

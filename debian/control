@@ -1,0 +1,57 @@
+Source: hipl
+Section: net
+Priority: optional
+Maintainer: HIPL team <hipl-dev@freelists.org>
+Build-Depends: debhelper (>= 7), python, libconfig8-dev, libssl-dev, autoconf, xmlto, w3m, libnetfilter-queue-dev
+Standards-Version: 3.9.1
+Homepage: http://launchpad.net/hipl
+
+Package: hipl-all
+Architecture: all
+Depends: ${misc:Depends}, hipl-daemon, hipl-firewall, hipl-dnsproxy, hipl-doc
+Description: HIP for Linux full software bundle
+ The Host Identity Protocol (HIP) and the related architecture form a proposal
+ to change the TCP/IP stack to securely support mobility and multi-homing.
+ This dummy package depends on the complete HIPL software bundle: daemon,
+ firewall, DNS proxy and documentation.
+
+Package: hipl-daemon
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, openssl, libnet-ip-perl, libnet-dns-perl
+Suggests: hipl-doc
+Replaces: hipl-minimal, hipl-tools
+Description: HIP for Linux IPsec key management and mobility daemon
+ The Host Identity Protocol (HIP) and the related architecture form a proposal
+ to change the TCP/IP stack to securely support mobility and multi-homing.
+ The HIPL daemon implements the HIP protocol and allows hosts to communicate
+ over HIP.
+
+Package: hipl-firewall
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, openssl, iptables, libnetfilter-queue1
+Suggests: hipl-doc
+Description: HIP for Linux multi-purpose firewall daemon
+ The Host Identity Protocol (HIP) and the related architecture form a proposal
+ to change the TCP/IP stack to securely support mobility and multi-homing.
+ The HIPL firewall provides  public-key/HIT-based access control, Local Scope
+ Identifier support, userspace BEET-mode IPsec (for kernels below < 2.6.27) and
+ system-based opportunistic mode for HIP.
+
+Package: hipl-dnsproxy
+Architecture: any
+Depends: ${misc:Depends}, hipl-daemon, python
+Suggests: hipl-doc
+Description: HIP for Linux name lookup proxy
+ The Host Identity Protocol (HIP) and the related architecture form a proposal
+ to change the TCP/IP stack to securely support mobility and multi-homing.
+ The HIPL DNS proxy intercepts DNS lookups and returns HITs or LSIs when
+ corresponding entries are found in the DNS or in hosts files.
+
+Package: hipl-doc
+Architecture: all
+Depends: ${misc:Depends}
+Section: doc
+Description: HIP for Linux documentation
+ The Host Identity Protocol (HIP) and the related architecture form a proposal
+ to change the TCP/IP stack to securely support mobility and multi-homing.
+ This package contains the documentation for HIPL.

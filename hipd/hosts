@@ -1,0 +1,4 @@
+# This file stores the HITs of the hosts, in a similar fashion to /etc/hosts.
+# The aliases are optional.  Examples:
+#2001:1e:361f:8a55:6730:6f82:ef36:2fff kyle kyle.com # This is a HIT with alias
+#2001:17:53ab:9ff1:3cba:15f:86d6:ea2e kenny       # This is a HIT without alias

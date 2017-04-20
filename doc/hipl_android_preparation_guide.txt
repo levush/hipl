@@ -1,0 +1,201 @@
+HIPL for Android
+================
+During the summer and early autumn I have been working on porting parts of
+HIP for Linux protocol software to Android. In it's working it relies on a
+couple of kernel features that we did not find present on most of our phones.
+These features however are readily available in the kernel source code. In this
+document I describe the steps I took to prepare a Samsung Galaxy Nexus phone to
+run HIPL. The phone should be replaceable with other Nexus family phones and
+tablets with minor changes to the examples. Preparing other phones is outside
+the scope of this document.
+
+Binary drivers for all components such as the camera may not be available and
+features that depend on them may not work. It depends on your device. You do
+this at your own risk. At least the driver for the camera on Galaxy Nexus was
+missing.
+
+These steps will clear the device of all personal data, so be sure to take
+backups if needed. During these steps we will unlock the device's bootloader,
+compile and install a new version of the operating system, compile a customised
+kernel for it and flash it on the device. If the features are already available
+in your current rooted rom, you don't need to do any of this.
+
+
+Android Open Source Project
+===========================
+In this guide we'll use the Android Open Source Project (AOSP) as an example.
+
+Repo -wrapper for Git
+---------------------
+AOSP uses repo for source code management.
+We need to download and install this tool first.
+
+    mkdir ~/bin
+    PATH=~/bin:$PATH
+    curl http://commondatastorage.googleapis.com/git-repo-downloads/repo \
+         > ~/bin/repo
+    chmod a+x ~/bin/repo
+
+Download AOSP
+-------------
+This will download the Android Open Source Project source code. It is quite big
+and this step takes time. Consider heading to lunch after launching 'repo sync'.
+
+    mkdir aosp
+    cd aosp
+    repo init -u https://android.googlesource.com/platform/manifest
+    repo sync
+
+Download and unpack driver binaries
+-----------------------------------
+Drivers for many devices are proprietary and are not distributed within AOSP; We
+need to download them, unpack them and accept their licences. AOSP build process
+will search for proprietary drivers under directory 'vendor' in the source root.
+For the Nexus device-series the right drivers can be found at
+https://developers.google.com/android/nexus/drivers
+
+Download each driver for your device, extract them and run the scripts that
+you find inside. Each script will require you to accept a lisence and will
+extract the driver under the 'vendor' directory. After extracting them all,
+copy the 'vendor' directory to the root of your AOSP source directory.
+
+Configure
+---------
+These scripts prepare your build environment. Launching 'lunch' without
+arguments will print a menu from which you can choose your build target.
+The $OUT environment variable that we'll use later comes from here.
+
+    source build/envsetup.sh
+    lunch  full_maguro
+
+Build
+-----
+This will build the AOSP and put the result in $OUT. Adjust the number after
+-j (number of compile threads) to your liking, a good rule of thumb is the
+number of cores +1. After this step it is possible to flash the phone with the
+default AOSP system by booting your phone to bootloader and running
+'fastboot -w flashall', but now is a bit early if we want the custom kernel.
+
+    make -j4
+
+At the time of writing, there were a couple of Makefiles that would get upset if
+you had the environment variable NDK_ROOT set. If you encounter this,
+simply 'unset NDK_ROOT' and try again.
+
+
+Kernel
+======
+For HIPD to work, we need certain features from the kernel. These features are
+readily available but disabled by default in most Android kernels. Therefore we
+need to compile our own kernel with these features enabled.
+
+Download
+--------
+We start by downloading the kernel sources. For the Nexus series you can check
+which one you need from http://source.android.com/source/building-kernels.html.
+After cloning you can check which brances are available for checkout with
+'git branch -a'.
+
+    mkdir ../kernel
+    cd ../kernel
+    git clone https://android.googlesource.com/kernel/omap.git
+    cd omap
+    git checkout remotes/origin/android-omap-tuna-3.0-jb-mr2
+
+Configure
+---------
+We then tell the build-environment about the target architecture, add the
+compilers to PATH, load the default kernel configuration for our device and
+bring up a menu where we can do further configuration.
+
+    export ARCH=arm
+    export SUBARCH=arm
+    export CROSS_COMPILE=arm-eabi-
+    export PATH=$(pwd)/../../aosp/prebuilts/linux-x86/arm/arb-eabi-4.6/bin:$PATH
+    make tuna_defconfig
+    make menuconfig
+
+In the configuration menu, enable the following:
+
+- Enable loadable module support
+- Networking support > Networking options > IP: IPsec BEET mode
+- Device drivers > Network device support > Dummy net driver support
+- Cryptographic API > Null algorithms
+
+Compile
+-------
+Once the kernel has been configured, it's time to build it.
+
+    make
+
+If there are problems with "smc #0", you can try adding ".arch_extension sec" to
+the offending files. (I used "sed -e '1i.arch_extension sec' -i filename", it
+worked, but I'm not sure if it's the right way.)
+
+If there is a missing 'elf.h', you can copy it from under the aosp directory in
+external/elfutils/libelf/elf.h
+
+Copy to AOSP
+------------
+When the kernel has been compiled, we need a way to put it on the device. We
+replace the original AOSP kernel and put its modules in place. Make produces two
+symbolic links that we don't want present in the final image.
+
+    cp arch/arm/boot/zImage $OUT/kernel
+    make INSTALL_MOD_PATH=$OUT/system modules_install
+    rm $OUT/system/lib/modules/*/source
+    rm $OUT/system/lib/modules/*/build
+
+Rebuild boot image
+------------------
+Now that our kernel is in place in the AOSP tree, we need to rebuild the boot
+image with the new kernel.
+
+    cd ../../aosp
+    make bootimage
+
+
+Flash the new os to device
+==========================
+Once the new images are complete, it's time to flash them on the device. New
+images can be flashed from the bootloader ("fastboot mode"). You can generally
+get there with adb, but there is a manual way too: for the Nexus devices
+http://source.android.com/source/building-devices.html. If the device has a
+locked bootloader, it needs to be opened (usually 'fastboot oem unlock').
+(this might prevent some DRM from working!) Some of the steps might reboot the
+phone; the important part is that all the fastboot commands need to be entered
+with the device in bootloader.
+
+    adb reboot bootloader
+    fastboot oem unlock
+    fastboot reboot-bootloader
+    fastboot -w flashall
+    fastboot reboot
+
+The -w in 'fastboot -w flashall' is important. It clears caches and previous
+user data that would very likely confuse the new image and prevent it from
+booting all the way. It the phone doesn't boot this is the first thing you
+should check.
+
+Google apps (optional)
+----------------------
+Now you have a clear Android open source operating system with our customised
+kernel. This means that proprietary apps and services like Google Play and
+contacts sync are not there. The easiest way to get them there is to install a
+custom recovery image, like the Clockworkmod Recovery
+(http://clockworkmod.com/rommanager) and flash it to the device using fastboot.
+
+    adb reboot bootloader
+    fastboot flash recovery (your recovery image)
+
+Once a recovery image is installed, you can boot into recovery mode either
+straight from the bootloader menu or from normally booted Android by
+'adb reboot recovery'. The google apps can be found by searching the internet;
+e.g. from http://forum.xda-developers.com/showthread.php?p=43972031.
+
+Done
+----
+When you get here, your device should be running the Android operating system
+with our new kernel. You can verify this at "Settings > About phone". You should
+now have everything necessary to install HIPL.
+

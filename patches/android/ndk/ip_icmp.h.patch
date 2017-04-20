@@ -1,0 +1,33 @@
+--- old/netinet/ip_icmp.h	2014-04-30 21:35:23.976064195 -0700
++++ new/netinet/ip_icmp.h	2014-04-30 21:52:21.520099130 -0700
+@@ -119,6 +119,29 @@
+ #define	icmp_data	  icmp_dun.id_data
+ };
+ 
++
++struct icmphdr
++{
++  u_int8_t type;                /* message type */
++  u_int8_t code;                /* type sub-code */
++  u_int16_t checksum;
++  union
++  {
++    struct
++    {
++      u_int16_t id;
++      u_int16_t sequence;
++    } echo;                     /* echo datagram */
++    u_int32_t   gateway;        /* gateway address */
++    struct
++    {
++      u_int16_t __unused;
++      u_int16_t mtu;
++    } frag;                     /* path mtu discovery */
++  } un;
++};
++
++
+ /*
+  * For IPv6 transition related ICMP errors.
+  */
+  

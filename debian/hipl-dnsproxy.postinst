@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+. /usr/share/debconf/confmodule
+
+if [ -x /etc/init.d/hipl-dnsproxy ]; then
+   # Start-up priority changed from 20 to 40, erase old links.
+   update-rc.d -f hipl-dnsproxy remove
+   # Default run level (20) is problematic with hipl-dnsproxy in Ubuntu Lucid.
+   # Note: $bind did not entirely solve the problem (see lp:845677).
+   update-rc.d hipl-dnsproxy defaults 40 60 >/dev/null
+fi

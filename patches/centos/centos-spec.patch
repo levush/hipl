@@ -1,0 +1,13 @@
+=== modified file 'packaging/hipl.spec'
+--- old/packaging/hipl.spec	2013-08-06 13:16:32 +0000
++++ new/packaging/hipl.spec	2014-03-27 19:28:59 +0000
+@@ -55,7 +55,7 @@
+ HIP for Linux IPsec key management and mobility daemon.
+ 
+ %package firewall
+-Requires: openssl iptables libnetfilter_queue
++Requires: openssl iptables libnetfilter_queue1
+ Summary: HIPL multi-purpose firewall daemon
+ Group: System Environment/Daemons
+ %description firewall
+
